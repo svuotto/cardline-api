@@ -29,3 +29,15 @@ Health: `http://localhost:3000/health`
 | Production | `https://api.cardline.io` |
 
 On the Hetzner test server, set `DB_HOST=postgres` when using Docker Compose.
+
+## Hetzner test deploy
+
+See `deploy/docker-compose.test.yml` and `deploy/env.test.example`.
+
+```bash
+# On server: /opt/cardline/api = cloned repo, /opt/cardline/.env = secrets
+cp api/deploy/env.test.example .env
+# edit .env, then from /opt/cardline:
+docker compose -f api/deploy/docker-compose.test.yml up -d --build
+curl http://127.0.0.1/health
+```

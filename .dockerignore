@@ -1,0 +1,14 @@
+node_modules
+dist
+coverage
+.git
+.env
+.env.*
+!.env.example
+keys
+*.p8
+*.pem
+README.md
+test
+.vscode
+.idea
