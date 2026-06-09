@@ -1,0 +1,44 @@
+{
+  "version": 20260501,
+  "restrictionSets": [
+    {
+      "effectiveFrom": "2026-04-10",
+      "validUntil": null,
+      "groups": [
+        {
+          "groupUid": "banned-pair-10042026-1",
+          "rule": "atMostOne",
+          "label": "These cards cannot be combined",
+          "memberCardCoreIndex": [
+            "OP07-115",
+            "EB04-058"
+          ]
+        }
+      ]
+    },
+    {
+      "effectiveFrom": "2025-08-30",
+      "validUntil": null,
+      "groups": [
+        {
+          "groupUid": "banned-pair-30082025-1",
+          "rule": "atMostOne",
+          "label": "These cards cannot be combined",
+          "memberCardCoreIndex": [
+            "OP11-040",
+            "OP11-067"
+          ]
+        },
+        {
+          "groupUid": "banned-pair-30082025-2",
+          "rule": "atMostOne",
+          "label": "These cards cannot be combined",
+          "memberCardCoreIndex": [
+            "OP11-040",
+            "OP11-069"
+          ]
+        }
+      ]
+    }
+  ]
+}
