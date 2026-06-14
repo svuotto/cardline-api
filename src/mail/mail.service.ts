@@ -23,7 +23,7 @@ export class MailService {
 
     const from =
       this.cfg.get<string>("MAIL_FROM")?.trim()
-      ?? "Cardline <onboarding@resend.dev>";
+      ?? "Cardline <noreply@cardline.io>";
 
     const response = await fetch("https://api.resend.com/emails", {
       method: "POST",
