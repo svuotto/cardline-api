@@ -38,6 +38,6 @@ See `deploy/docker-compose.test.yml` and `deploy/env.test.example`.
 # On server: /opt/cardline/api = cloned repo, /opt/cardline/.env = secrets
 cp api/deploy/env.test.example .env
 # edit .env, then from /opt/cardline:
-docker compose -f api/deploy/docker-compose.test.yml up -d --build
+docker compose --project-directory /opt/cardline -f api/deploy/docker-compose.test.yml up -d --build
 curl http://127.0.0.1/health
 ```

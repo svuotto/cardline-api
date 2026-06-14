@@ -17,10 +17,12 @@ import { ThrottlerGuard, ThrottlerModule } from "@nestjs/throttler";
 import { ScheduleModule } from "@nestjs/schedule";
 import { NotificationModule } from "./notification/notification.module";
 import { FeedbackModule } from "./feedback/feedback.module";
+import { MailModule } from "./mail/mail.module";
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    MailModule,
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (cfg: ConfigService) => ({

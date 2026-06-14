@@ -43,21 +43,11 @@ export class AppUserProfileColumns1772330000004 implements MigrationInterface {
 
       ALTER TABLE app_user
         ALTER COLUMN app_account_token SET NOT NULL;
-
-      ALTER TABLE user_notification_preference
-        DROP CONSTRAINT IF EXISTS fk_user_notification_preference_user;
-
-      ALTER TABLE user_notification_preference
-        ADD CONSTRAINT fk_user_notification_preference_user
-        FOREIGN KEY (user_uid) REFERENCES app_user(user_uid) ON DELETE CASCADE;
     `);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
-      ALTER TABLE user_notification_preference
-        DROP CONSTRAINT IF EXISTS fk_user_notification_preference_user;
-
       DROP INDEX IF EXISTS ux_app_user_app_account_token;
       DROP INDEX IF EXISTS ux_app_user_google_sub;
       DROP INDEX IF EXISTS ux_app_user_username;

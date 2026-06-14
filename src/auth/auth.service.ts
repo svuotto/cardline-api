@@ -20,6 +20,7 @@ import { AuthSessionEntity } from "./auth-session.entity";
 import { EmailChangeRevokeTokenEntity } from "./email-change-revoke-token.entity";
 import { randomToken, sha256Hex } from "./auth.util";
 import { RegisterDto, UpdateLanguagePreferencesDto, UpdateEmailAfterRecoveryDto, UpdateUsernameDto } from "./auth.dto";
+import { MailService } from "../mail/mail.service";
 
 type AuthTokens = {
   accessToken: string;
@@ -62,6 +63,7 @@ export class AuthService {
     private readonly accountDeletion: AccountDeletionService,
     private readonly jwt: JwtService,
     private readonly cfg: ConfigService,
+    private readonly mail: MailService,
     private readonly usernameBlocklistService: UsernameBlocklistService,
     @InjectRepository(AppUserEntity)
     private readonly userRepo: Repository<AppUserEntity>,
@@ -388,16 +390,20 @@ export class AuthService {
 
     await this.evtRepo.save(tokenRow);
 
-    console.log("📨 MAGIC CODE:", {
-      to: targetEmail,
-      code,
-    });
-
     const link = `${this.linkBaseUrl()}/auth/verify-email?token=${encodeURIComponent(code)}`;
+    const ttl = this.magicTtlMin();
 
-    console.log("📨 MAGIC LINK:", {
+    await this.mail.send({
       to: targetEmail,
-      link,
+      subject: "Your Cardline sign-in code",
+      text: [
+        `Your Cardline verification code is: ${code}`,
+        "",
+        `You can also open this link in your browser:`,
+        link,
+        "",
+        `This code expires in ${ttl} minutes.`,
+      ].join("\n"),
     });
   }
 
@@ -546,11 +552,17 @@ export class AuthService {
     const revokeToken = await this.createEmailChangeRevokeToken(user);
     const revokeLink = `${this.linkBaseUrl()}/auth/revoke-email-change?token=${encodeURIComponent(revokeToken)}`;
 
-    console.log("📨 EMAIL CHANGE WARNING:", {
+    await this.mail.send({
       to: user.email,
-      subject: `Someone wants to change your Cardline email to ${user.pendingNewEmail}`,
-      finalizesAt: user.emailChangeFinalizesAt.toISOString(),
-      revokeLink,
+      subject: `Cardline email change requested`,
+      text: [
+        `Someone requested to change your Cardline email to ${user.pendingNewEmail}.`,
+        "",
+        `If this was you, no action is needed. The change finalizes at ${user.emailChangeFinalizesAt.toISOString()}.`,
+        "",
+        `If this was not you, revoke the change here:`,
+        revokeLink,
+      ].join("\n"),
     });
   }
 
@@ -559,10 +571,14 @@ export class AuthService {
       throw new BadRequestException("Pending email change is not ready.");
     }
 
-    console.log("📨 NEW EMAIL CONFIRMATION INFO:", {
+    await this.mail.send({
       to: user.pendingNewEmail,
-      subject: "Your new Cardline email has been verified",
-      finalizesAt: user.emailChangeFinalizesAt.toISOString(),
+      subject: "Your new Cardline email was verified",
+      text: [
+        `Your new Cardline email address has been verified.`,
+        "",
+        `The change will take effect at ${user.emailChangeFinalizesAt.toISOString()}.`,
+      ].join("\n"),
     });
   }
 
@@ -717,23 +733,26 @@ export class AuthService {
   }
 
   async sendEmailChangeFinalizedToNewEmail(user: AppUserEntity) {
-    console.log("📨 EMAIL CHANGE FINALIZED (NEW EMAIL):", {
+    await this.mail.send({
       to: user.email,
       subject: "Your Cardline email change is now active",
+      text: "Your Cardline email address has been updated successfully.",
     });
   }
 
   async sendEmailChangeFinalizedToOldEmail(oldEmail: string, newEmail: string) {
-    console.log("📨 EMAIL CHANGE FINALIZED (OLD EMAIL):", {
+    await this.mail.send({
       to: oldEmail,
-      subject: `Your Cardline email was changed to ${newEmail}`,
+      subject: "Your Cardline email was changed",
+      text: `Your Cardline account email was changed to ${newEmail}.`,
     });
   }
 
   async sendEmailChangeRevokedToCurrentEmail(user: AppUserEntity) {
-    console.log("📨 EMAIL CHANGE REVOKED:", {
+    await this.mail.send({
       to: user.email,
       subject: "Your pending Cardline email change was revoked",
+      text: "The pending email change on your Cardline account was revoked.",
     });
   }
 
@@ -1106,9 +1125,14 @@ export class AuthService {
 
     await this.evtRepo.save(tokenRow);
 
-    console.log("📨 ACCOUNT DELETION CODE:", {
+    await this.mail.send({
       to: targetEmail,
-      code,
+      subject: "Confirm deletion of your Cardline account",
+      text: [
+        `Your Cardline account deletion code is: ${code}`,
+        "",
+        `This code expires in ${this.magicTtlMin()} minutes.`,
+      ].join("\n"),
     });
   }
 

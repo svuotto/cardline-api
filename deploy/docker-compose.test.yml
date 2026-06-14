@@ -1,3 +1,6 @@
+# Run from /opt/cardline:
+# docker compose --project-directory /opt/cardline -f api/deploy/docker-compose.test.yml up -d --build
+
 services:
   postgres:
     image: postgres:16-alpine
@@ -32,11 +35,11 @@ services:
 
   api:
     build:
-      context: ..
+      context: ./api
       dockerfile: Dockerfile
     restart: unless-stopped
     env_file:
-      - ../../.env
+      - .env
     environment:
       NODE_ENV: staging
       PORT: 3000
@@ -46,7 +49,7 @@ services:
       DB_PASSWORD: ${POSTGRES_PASSWORD}
       DB_NAME: cardline_test
     volumes:
-      - ../keys:/app/keys:ro
+      - ./api/keys:/app/keys:ro
     depends_on:
       postgres:
         condition: service_healthy
@@ -60,7 +63,7 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./api/deploy/Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
       - caddy_config:/config
     depends_on:

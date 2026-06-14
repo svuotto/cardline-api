@@ -4,15 +4,22 @@ import { Injectable } from "@nestjs/common";
 @Injectable()
 export class APNSService {
 
-  private provider: apn.Provider;
+  private provider: apn.Provider | null = null;
 
   constructor() {
+    const keyPath = process.env.APNS_PRIVATE_KEY_PATH;
+    const keyId = process.env.APNS_KEY_ID;
+    const teamId = process.env.APNS_TEAM_ID;
+
+    if (!keyPath || !keyId || !teamId) {
+      return;
+    }
 
     this.provider = new apn.Provider({
       token: {
-        key: process.env.APNS_PRIVATE_KEY_PATH!,
-        keyId: process.env.APNS_KEY_ID!,
-        teamId: process.env.APNS_TEAM_ID!,
+        key: keyPath,
+        keyId,
+        teamId,
       },
 
       production:
@@ -44,6 +51,10 @@ export class APNSService {
     }
 
     note.payload = input.payload ?? {};
+
+    if (!this.provider) {
+      return { sent: [], failed: [] };
+    }
 
     return this.provider.send(
       note,
